@@ -16,6 +16,9 @@ class Condition(models.Model):
 class Requirement(models.Model):
   name = models.CharField(max_length=255)
   course = models.ManyToManyField(Course)
+  min_courses = models.IntegerField(blank=True, null=True)
+  max_courses = models.IntegerField(blank=True, null=True)
+  allows_other = models.BooleanField(default=False)
   condition = models.ManyToManyField(Condition)
 
   def __str__(self):

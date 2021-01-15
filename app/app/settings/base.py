@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'modelcluster',
 
     'concentration',
-    'requirement'
+    'requirement',
+    'plan'
 ]
 
 MIDDLEWARE = [
