@@ -1,0 +1,46 @@
+from concentration.models import Requirement
+from concentration.serializers import NestedReqSerializer
+from concentration.models import Course
+
+
+req = Requirement.objects.get(pk=4)
+ser = NestedReqSerializer(req)
+ser.data
+
+
+
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
+
+factory = APIRequestFactory()
+request = factory.get('/')
+
+
+serializer_context = {
+    'request': Request(request),
+}
+
+from plan.models import Student
+from plan.serializers import NestedStudentSerializer
+
+student = Student.objects.get(pk=1)
+
+stuser = NestedPlanSerializer(student, context=serializer_context)
+
+
+
+
+from concentration.models import Concentration
+
+from concentration.serializers import NestedConcentrationSerializer
+
+conc = Concentration.objects.get(pk=1)
+
+ser = NestedConcentrationSerializer(conc, context=serializer_context)
+
+ser.data
+
+from rest_framework.renderers import JSONRenderer
+
+json = JSONRenderer().render(ser.data)
+json

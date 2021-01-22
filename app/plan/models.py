@@ -9,7 +9,6 @@ STATUS_CHOICES = [
     ('INPROGRESS', 'In progress'),
 ]
 
-
 class Student(models.Model):
   name = models.CharField(max_length=255)
 
@@ -27,9 +26,9 @@ class PlanCourse(models.Model):
 
 class PlanRequirement(models.Model):
   requirement = models.ForeignKey(Requirement, default=0, on_delete=models.CASCADE)
-  plan = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name='requirements')
+  plan = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name='plan_requirements')
   course = models.ManyToManyField(PlanCourse)
 
-# https://stackoverflow.com/questions/54791386/django-converting-queryset-with-foreign-keys-to-json
 
-  
+
+  # https://stackoverflow.com/questions/54791386/django-converting-queryset-with-foreign-keys-to-json

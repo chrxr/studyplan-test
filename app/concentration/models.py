@@ -19,7 +19,7 @@ class Requirement(models.Model):
   min_courses = models.IntegerField(blank=True, null=True)
   max_courses = models.IntegerField(blank=True, null=True)
   allows_other = models.BooleanField(default=False)
-  condition = models.ManyToManyField(Condition)
+  condition = models.ManyToManyField(Condition, blank=True, null=True)
 
   def __str__(self):
     return self.name
