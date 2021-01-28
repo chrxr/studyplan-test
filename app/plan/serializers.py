@@ -39,3 +39,5 @@ class NestedPlanSerializer(serializers.Serializer):
 class NestedStudentSerializer(serializers.Serializer):
   name = serializers.CharField(max_length=255)
   plans = NestedPlanSerializer(many=True)
+
+  

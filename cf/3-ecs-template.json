@@ -1,0 +1,114 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ECS for StudyPlan test",
+  "Parameters": {
+    "DjangoDebugMode": {
+      "Type": "String",
+      "AllowedValues": ["0", "1"],
+      "Description": "1 for debug on"
+    },
+    "DjangoSecretKey": {
+      "Type": "String",
+      "MinLength": 15,
+      "Description": "Secret key for Django"
+    },
+    "DjangoSuperUserUsername": {
+      "Type": "String",
+      "Description": "Username for Django superuser"
+    },
+    "DjangoSuperUserPassword": {
+      "Type": "String",
+      "NoEcho": true,
+      "Description": "Password for Django superuser"
+    },
+    "DjangoSuperUserEmail": {
+      "Type": "String",
+      "Description": "Email address for Django superuser"
+    }
+  },
+  "Metadata": {},
+  "Resources": {
+
+    "EcsCluster": {
+      "Type": "AWS::ECS::Cluster",
+      "Properties": {
+        "ClusterName": "StudyPlanCluster"
+      }
+    },
+
+    "EcsService": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "PlatformVersion": "1.4.0",
+        "Cluster": {"Ref": "EcsCluster"},
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "ENABLED",
+            "Subnets": [
+              {"Fn::ImportValue" : "subnet-c8550be7"}, 
+              {"Fn::ImportValue" : "subnet-32769078"}
+            ],
+            "SecurityGroups": [
+              {"Fn::ImportValue" : "ECSSGSTACK-ECSTASKSECURITYGROUP"}
+            ]
+          }
+        },
+        "Tags": [{"Key": "Name", "Value": "EcsCfService"}],
+        "ServiceName": "StudyPlanService",
+        "DesiredCount": 1,
+        "TaskDefinition": {"Ref": "EcsCfTaskDef"}
+      }
+    },
+
+    "EcsCfTaskDef": {
+      "Type" : "AWS::ECS::TaskDefinition",
+      "Properties" : {
+        "RequiresCompatibilities": ["FARGATE"],
+        "Family": "StudyPlanTaskDef",
+        "Volumes": [
+          {
+            "Name": "db_volume",
+            "EFSVolumeConfiguration": {
+              "FilesystemId": {"Fn::ImportValue": "STATICS3STACK-EFSFILESYSTEMID"},
+              "AuthorizationConfig": {
+                "AccessPointId": {"Fn::ImportValue": "STATICS3STACK-EFSACCESSPOINTID"}
+              },
+              "TransitEncryption": "ENABLED"
+            }
+          }
+        ],
+        "NetworkMode": "awsvpc",
+        "Cpu": "1024",
+        "Memory": "2048",
+        "ExecutionRoleArn": "arn:aws:iam::046080352995:role/ecsTaskExecutionRole",
+        "ContainerDefinitions": [
+          { 
+            "PortMappings": [
+              {"ContainerPort": 8000}
+            ],
+            "Name": "BlogTaskCF",
+            "EntryPoint": ["/home/app/web/entrypoint.prod.sh"],
+            "Environment": [
+              {"Name": "DEBUG", "Value": {"Ref": "DjangoDebugMode"} },
+              {"Name": "SECRET_KEY", "Value": {"Ref": "DjangoSecretKey"} },
+              {"Name": "SQL_DATABASE", "Value": "/home/app/web/db/db.sqlite3"},
+              {"Name": "DJANGO_ALLOWED_HOSTS", "Value": "*"},
+              {"Name": "DJANGO_SETTINGS_MODULE", "Value": "blog_project.settings.production"},
+              {"Name": "DJANGO_SUPERUSER_PASSWORD", "Value": {"Ref": "DjangoSuperUserPassword"} },
+              {"Name": "DJANGO_SUPERUSER_EMAIL", "Value": {"Ref": "DjangoSuperUserEmail"} },
+              {"Name": "DJANGO_SUPERUSER_USERNAME", "Value": {"Ref": "DjangoSuperUserUsername"} },
+              {"Name": "DATABASE", "Value": "sqlite3"}
+            ],
+            "Image": "ghcr.io/chrxr/studyplan-test_web:v0.2",
+            "MountPoints": [
+              {"ContainerPath": "/home/app/web/db", "SourceVolume": "db_volume"}
+            ],
+            "WorkingDirectory": "/home/app/web"
+          }
+        ]
+      }    
+    }
+  },
+  "Outputs": {}
+}

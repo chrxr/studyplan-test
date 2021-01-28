@@ -1,0 +1,66 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Security groups for ECS, EFS etc.",
+  "Parameters": {},
+  "Metadata": {},
+  "Resources": {
+
+    "ECSTaskSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for ECS task",
+        "GroupName": "StudyPlanTaskSG",
+        "Tags": [{"Key": "Name", "Value": "ECS Task SG"}],
+        "VpcId": "vpc-e0f8269b",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "128.103.224.178/32",
+            "FromPort": 8000,
+            "ToPort": 8000,
+            "IpProtocol": "tcp"
+          },
+          {
+            "CidrIp": "128.103.24.178/32",
+            "FromPort": 8000,
+            "ToPort": 8000,
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },   
+
+    "EfsSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for connecting ECS to EFS",
+        "GroupName": "StudyPlanEfsSG",
+        "Tags": [{"Key": "Name", "Value": "SG for ECS EFS"}],
+        "VpcId": "vpc-e0f8269b",
+        "SecurityGroupIngress": [
+          {
+            "SourceSecurityGroupId": {"Ref": "ECSTaskSecurityGroup"},
+            "FromPort": 2049,
+            "ToPort": 2049,
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ECSTaskSecurityGroupId": {
+      "Description" : "The ID the ECS security group for the study plan test",
+      "Value" : { "Ref" : "ECSTaskSecurityGroup" },
+      "Export" : {
+        "Name" : "ECSSGSTACK-ECSTASKSECURITYGROUP"
+      }
+    },
+    "EFSSecurityGroupId": {
+      "Description" : "The ID of the EFS security group for the study plan test",
+      "Value": { "Ref" : "EfsSecurityGroup"},
+      "Export": {
+        "Name": "ECSSGSTACK-EFSSECURITYGROUP"
+      }
+    }
+  }
+}

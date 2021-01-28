@@ -25,7 +25,7 @@ from plan.serializers import NestedStudentSerializer
 
 student = Student.objects.get(pk=1)
 
-stuser = NestedPlanSerializer(student, context=serializer_context)
+stuser = NestedStudentSerializer(student, context=serializer_context)
 
 
 
@@ -42,5 +42,5 @@ ser.data
 
 from rest_framework.renderers import JSONRenderer
 
-json = JSONRenderer().render(ser.data)
+json = JSONRenderer().render(stuser.data)
 json

@@ -1,6 +1,9 @@
+Create production version of the docker image
+- Recreate docker image with docker prod
+
 Cloudformations:
 
 - Security groups
   - Web to ECS port 8000
-  - ECS to RDS
-- 
+  - 
+- EFS
