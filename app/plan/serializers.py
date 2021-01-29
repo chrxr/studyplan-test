@@ -11,7 +11,7 @@ class StudentSerializer(serializers.HyperlinkedModelSerializer):
 class PlanSerializer(serializers.HyperlinkedModelSerializer):
   class Meta:
     model = Plan
-    fields = ['submission_date', 'student', 'concentration', 'status', 'requirements']
+    fields = ['submission_date', 'student', 'concentration', 'status', 'plan_requirements']
 
 class PlanCourseSerializer(serializers.HyperlinkedModelSerializer):
   class Meta:

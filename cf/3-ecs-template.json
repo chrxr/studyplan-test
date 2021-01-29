@@ -39,15 +39,15 @@
     "EcsService": {
       "Type": "AWS::ECS::Service",
       "Properties": {
-        "PlatformVersion": "1.4.0",
         "Cluster": {"Ref": "EcsCluster"},
         "LaunchType": "FARGATE",
+        "PlatformVersion": "1.4.0",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
             "AssignPublicIp": "ENABLED",
             "Subnets": [
-              {"Fn::ImportValue" : "subnet-c8550be7"}, 
-              {"Fn::ImportValue" : "subnet-32769078"}
+              "subnet-c8550be7",
+              "subnet-32769078"
             ],
             "SecurityGroups": [
               {"Fn::ImportValue" : "ECSSGSTACK-ECSTASKSECURITYGROUP"}
@@ -58,6 +58,24 @@
         "ServiceName": "StudyPlanService",
         "DesiredCount": 1,
         "TaskDefinition": {"Ref": "EcsCfTaskDef"}
+      }
+    },
+
+    "CloudwatchLogsGroup":{
+      "Type":"AWS::Logs::LogGroup",
+      "Properties":{
+        "LogGroupName":{
+          "Fn::Join":[
+            "-",
+            [
+              "StudyPlanLog",
+              {
+                "Ref":"AWS::StackName"
+              }
+            ]
+          ] 
+        },
+        "RetentionInDays":3
       }
     },
 
@@ -81,30 +99,41 @@
         "NetworkMode": "awsvpc",
         "Cpu": "1024",
         "Memory": "2048",
-        "ExecutionRoleArn": "arn:aws:iam::046080352995:role/ecsTaskExecutionRole",
+        "ExecutionRoleArn": "arn:aws:iam::082760623836:role/ecsTaskExecutionRole",
         "ContainerDefinitions": [
           { 
             "PortMappings": [
               {"ContainerPort": 8000}
             ],
-            "Name": "BlogTaskCF",
+            "Name": "StudyPlanContainerDef",
             "EntryPoint": ["/home/app/web/entrypoint.prod.sh"],
             "Environment": [
               {"Name": "DEBUG", "Value": {"Ref": "DjangoDebugMode"} },
               {"Name": "SECRET_KEY", "Value": {"Ref": "DjangoSecretKey"} },
               {"Name": "SQL_DATABASE", "Value": "/home/app/web/db/db.sqlite3"},
               {"Name": "DJANGO_ALLOWED_HOSTS", "Value": "*"},
-              {"Name": "DJANGO_SETTINGS_MODULE", "Value": "blog_project.settings.production"},
               {"Name": "DJANGO_SUPERUSER_PASSWORD", "Value": {"Ref": "DjangoSuperUserPassword"} },
               {"Name": "DJANGO_SUPERUSER_EMAIL", "Value": {"Ref": "DjangoSuperUserEmail"} },
               {"Name": "DJANGO_SUPERUSER_USERNAME", "Value": {"Ref": "DjangoSuperUserUsername"} },
               {"Name": "DATABASE", "Value": "sqlite3"}
             ],
-            "Image": "ghcr.io/chrxr/studyplan-test_web:v0.2",
+            "Image": "ghcr.io/chrxr/studyplan-test_web:v0.6",
             "MountPoints": [
               {"ContainerPath": "/home/app/web/db", "SourceVolume": "db_volume"}
             ],
-            "WorkingDirectory": "/home/app/web"
+            "WorkingDirectory": "/home/app/web",
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options":{
+                "awslogs-group":{
+                  "Ref":"CloudwatchLogsGroup"
+                },
+                "awslogs-region":{
+                  "Ref":"AWS::Region"
+                },
+                "awslogs-stream-prefix":"studyplan-test"
+              }
+            }
           }
         ]
       }    
